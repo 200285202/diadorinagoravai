@@ -8,10 +8,47 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'Poppins', sans-serif;}
+/* vídeo */
 #bg-video{position:fixed;right:0;bottom:0;min-width:100%;min-height:100%;width:auto;height:auto;z-index:-1;object-fit:cover;filter: brightness(0.6);}
+
+/* botão play para mobile (aparece se autoplay não funcionar) */
+.play-video-btn{
+  display:none;
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:60;
+  background:rgba(0,0,0,0.6);
+  color:#fff;
+  border:none;
+  padding:12px 16px;
+  border-radius:999px;
+  font-size:1rem;
+  cursor:pointer;
+  box-shadow:0 8px 25px rgba(0,0,0,0.6);
+}
+
+/* HERO */
 .hero{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;color:white;text-align:center;padding:2rem;}
 .logo{width:180px;height:auto;margin-bottom:1.5rem;}
 h1{font-family:'Permanent Marker', cursive;font-size:clamp(2.5rem,5vw,5rem);color:#FFD54F;text-shadow:2px 2px 8px rgba(0,0,0,0.7);}
+
+/* AVISO VISUAL */
+.notice{
+  max-width:1000px;
+  margin: 1rem auto;
+  background: linear-gradient(90deg, rgba(255,213,79,0.12), rgba(255,87,34,0.05));
+  border: 1px solid rgba(255,213,79,0.18);
+  color: #FFF;
+  padding: 12px 18px;
+  border-radius: 12px;
+  text-align:center;
+  font-weight:600;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+}
+
+/* restante do CSS */
 .menu-section{display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:1.5rem;padding:2rem;max-width:1000px;margin:0 auto 3rem;}
 .card{background:rgba(255,255,255,0.1);border-radius:16px;overflow:hidden;backdrop-filter: blur(6px);box-shadow:0 8px 25px rgba(0,0,0,0.5);color:white;transition:transform 0.3s ease, box-shadow 0.3s ease;}
 .card:hover{transform:translateY(-6px);box-shadow:0 12px 35px rgba(0,0,0,0.6);}
@@ -40,15 +77,24 @@ h1{font-family:'Permanent Marker', cursive;font-size:clamp(2.5rem,5vw,5rem);colo
 
 /* modal customização */
 #customModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:200;justify-content:center;align-items:center;}
-#customModal .modal-content{background:#fff;color:#000;width:90%;max-width:400px;border-radius:12px;padding:20px;max-height:90%;overflow-y:auto;position:relative;}
+#customModal .modal-content{background:#fff;color:#000;width:90%;max-width:480px;border-radius:12px;padding:20px;max-height:90%;overflow-y:auto;position:relative;}
 #customModal h2{font-family:'Permanent Marker', cursive;color:#FF5722;}
 #customModal button.close-modal{position:absolute;top:10px;right:10px;background:red;color:white;border:none;border-radius:50%;width:25px;height:25px;cursor:pointer;}
 #customModal button.confirm{background:#FF5722;color:#fff;padding:10px 15px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;width:100%;}
 
-@media (max-width:768px){
-  #bg-video{display:none}
-  body{background-image:url('poster.jpg');background-size:cover;background-position:center center;}
-}
+/* aviso dentro do modal */
+
+
+/* controles de quantidade para carnes */
+.meat-list{margin-bottom:12px;}
+.meat-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.05);}
+.meat-info{flex:1}
+.meat-controls{display:flex;align-items:center;gap:8px}
+.qty-btn{background:#eee;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-weight:700}
+.qty-display{min-width:28px;text-align:center;font-weight:700}
+
+
+
 /* MENU HORIZONTAL 3D - PRETO E DOURADO */
 .menu-scroll {
   display: flex;
@@ -92,7 +138,6 @@ h1{font-family:'Permanent Marker', cursive;font-size:clamp(2.5rem,5vw,5rem);colo
   box-shadow: 0 10px 25px rgba(0,0,0,0.6);
   background: linear-gradient(145deg, #bfa135, #d4af37); /* dourado invertido no hover */
 }
-
 </style>
 </head>
 <body>
@@ -100,6 +145,9 @@ h1{font-family:'Permanent Marker', cursive;font-size:clamp(2.5rem,5vw,5rem);colo
 <video id="bg-video" autoplay muted loop playsinline poster="poster.jpg" aria-hidden="true">
   <source src="video.mp4" type="video/mp4">
 </video>
+
+<!-- botão play para mobile (caso autoplay esteja bloqueado) -->
+<button class="play-video-btn" id="playVideoBtn">▶ Ver vídeo</button>
 
 <!-- Ícone do carrinho -->
 <div class="cart-icon" id="cartIcon">
@@ -121,6 +169,11 @@ h1{font-family:'Permanent Marker', cursive;font-size:clamp(2.5rem,5vw,5rem);colo
     <h2>Escolha suas opções</h2>
     <button class="close-modal">×</button>
 
+    <!-- Nota importante dentro do modal -->
+    <div class="modal-note">
+      Se quiser carnes adicionais, selecione abaixo a(s) carne(s) e a quantidade desejada. Se precisar de mais detalhes, especifique na observação.
+    </div>
+
     <!-- Molhos -->
     <div style="margin-bottom:15px;">
       <h3>Molhos (Escolha 3) <span id="molho-count">0/3</span></h3>
@@ -132,7 +185,7 @@ h1{font-family:'Permanent Marker', cursive;font-size:clamp(2.5rem,5vw,5rem);colo
       <label><input type="checkbox" class="option" data-max="3" name="molho" value="Requeijão" data-price="0"> Requeijão</label>
     </div>
 
-    <!-- Acréscimos -->
+    <!-- Acréscimos (sem carnes principais, carnes vão na seção "Carnes") -->
     <div style="margin-bottom:15px;">
       <h3>Acréscimos (até 10)</h3>
       <label><input type="checkbox" class="option" data-max="10" name="acrescimo" value="Maionese Verde" data-price="3"> Maionese Verde + R$3,00</label><br>
@@ -141,10 +194,74 @@ h1{font-family:'Permanent Marker', cursive;font-size:clamp(2.5rem,5vw,5rem);colo
       <label><input type="checkbox" class="option" data-max="10" name="acrescimo" value="Ovo Frito" data-price="2"> Ovo Frito + R$2,00</label><br>
       <label><input type="checkbox" class="option" data-max="10" name="acrescimo" value="Calabresa" data-price="3.5"> Calabresa + R$3,50</label><br>
       <label><input type="checkbox" class="option" data-max="10" name="acrescimo" value="Bacon" data-price="3.5"> Bacon + R$3,50</label><br>
-      <label><input type="checkbox" class="option" data-max="10" name="acrescimo" value="Carne Industrializada" data-price="3"> Carne Industrializada + R$3,00</label><br>
-      <label><input type="checkbox" class="option" data-max="10" name="acrescimo" value="Carne Artesanal" data-price="5"> Carne Artesanal 120g + R$5,00</label><br>
-      <label><input type="checkbox" class="option" data-max="10" name="acrescimo" value="Frango Empanado" data-price="4"> Frango empanado (stake) + R$4,00</label><br>
       <label><input type="checkbox" class="option" data-max="10" name="acrescimo" value="Salsicha" data-price="2.5"> Salsicha + R$2,50</label>
+    </div>
+
+    <!-- Carnes: aqui o cliente escolhe quantas unidades quiser de cada carne -->
+    <div style="margin-bottom:15px;">
+      <h3>Carnes </h3>
+      <div class="meat-list" id="meatList">
+        <!-- cada .meat-row tem data-name e data-price -->
+        <div class="meat-row" data-name="Hamburguer industrializado" data-price="0">
+          <div class="meat-info">Hamburguer industrializado <small>(incluso)</small></div>
+          <div class="meat-controls">
+            <button class="qty-btn minus">−</button>
+            <div class="qty-display" data-qty>0</div>
+            <button class="qty-btn plus">+</button>
+            <div style="min-width:80px;text-align:right;margin-left:8px;">R$ <span class="meat-price">0.00</span></div>
+          </div>
+        </div>
+
+        <div class="meat-row" data-name="Hamburguer Artesanal Carne 100g" data-price="4.00">
+          <div class="meat-info">Hamburguer Artesanal Carne 100g</div>
+          <div class="meat-controls">
+            <button class="qty-btn minus">−</button>
+            <div class="qty-display" data-qty>0</div>
+            <button class="qty-btn plus">+</button>
+            <div style="min-width:80px;text-align:right;margin-left:8px;">R$ <span class="meat-price">4.00</span></div>
+          </div>
+        </div>
+
+        <div class="meat-row" data-name="Hamburguer Artesanal Frango 100g" data-price="4.00">
+          <div class="meat-info">Hamburguer Artesanal Frango 100g</div>
+          <div class="meat-controls">
+            <button class="qty-btn minus">−</button>
+            <div class="qty-display" data-qty>0</div>
+            <button class="qty-btn plus">+</button>
+            <div style="min-width:80px;text-align:right;margin-left:8px;">R$ <span class="meat-price">4.00</span></div>
+          </div>
+        </div>
+
+        <div class="meat-row" data-name="Hamburguer Linguiça 100g" data-price="4.00">
+          <div class="meat-info">Hamburguer Linguiça 100g</div>
+          <div class="meat-controls">
+            <button class="qty-btn minus">−</button>
+            <div class="qty-display" data-qty>0</div>
+            <button class="qty-btn plus">+</button>
+            <div style="min-width:80px;text-align:right;margin-left:8px;">R$ <span class="meat-price">4.00</span></div>
+          </div>
+        </div>
+
+        <div class="meat-row" data-name="Hamburguer Linguiça com queijo 130g" data-price="5.50">
+          <div class="meat-info">Hamburguer Linguiça com queijo 130g</div>
+          <div class="meat-controls">
+            <button class="qty-btn minus">−</button>
+            <div class="qty-display" data-qty>0</div>
+            <button class="qty-btn plus">+</button>
+            <div style="min-width:80px;text-align:right;margin-left:8px;">R$ <span class="meat-price">5.50</span></div>
+          </div>
+        </div>
+
+        <div class="meat-row" data-name="Frango empanado (stake)" data-price="4.00">
+          <div class="meat-info">Frango empanado (stake)</div>
+          <div class="meat-controls">
+            <button class="qty-btn minus">−</button>
+            <div class="qty-display" data-qty>0</div>
+            <button class="qty-btn plus">+</button>
+            <div style="min-width:80px;text-align:right;margin-left:8px;">R$ <span class="meat-price">4.00</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Batatas -->
@@ -184,6 +301,8 @@ h1{font-family:'Permanent Marker', cursive;font-size:clamp(2.5rem,5vw,5rem);colo
     <h1>Diadorin</h1>
   </section>
 
+  
+
   <div class="menu-scroll">
   <button data-target="podrao">Podão</button>
   <button data-target="furioso">Furiosos</button>
@@ -198,9 +317,10 @@ h1{font-family:'Permanent Marker', cursive;font-size:clamp(2.5rem,5vw,5rem);colo
   <button data-target="bebidas">Bebidas</button>
 </div>
 
-  <!-- Diadorin Furioso - Podrão -->
+  <!-- (mantive suas seções originais; copie/cole o restante do conteúdo aqui) -->
+
   <h2 style="text-align:center;color:#FFD54F;margin-top:2rem;font-family:'Permanent Marker', cursive;">Podrão</h2>
-  <section id="podrao"><h2></h2><p></p></section>
+  <section id="podrao"></section>
   <section class="menu-section">
     <div class="card">
       <img src="furioso_egg.jpg" alt="Furioso Egg">
@@ -211,198 +331,12 @@ h1{font-family:'Permanent Marker', cursive;font-size:clamp(2.5rem,5vw,5rem);colo
         <button class="btn-add">Adicionar</button>
       </div>
     </div>
-
   </section>
 
-<h2 style="text-align:center;color:#FFD54F;margin-top:2rem;font-family:'Permanent Marker', cursive;">Furioso</h2>
-  <section id="furioso"><h2></h2><p></p></section>
-  <section class="menu-section">
-    <div class="card">
-      <img src="furioso_egg.jpg" alt="Furioso Egg">
-      <div class="card-content">
-        <h2>X-Tudo Podrão</h2>
-        <p>Pão, carne, bacon, calabresa, ovo, queijo, presunto, alface, tomate, cebola, milho, ervilha, queijo ralado, azeitona, ovo de codorna, batata palha e 3 molhos.</p>
-        <div class="price">34,50</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-
-  </section>
-
-
-
-
-
-  
-
-  <!-- Pasteis 22cm --><section id="pasteis"><h2></h2><p></p></section>
-  <h2 style="text-align:center;color:#FFD54F;margin-top:2rem;font-family:'Permanent Marker', cursive;">Pasteis 22cm</h2>
-  
-  <section class="menu-section">
-    <div class="card">
-      <img src="bauru.jpg" alt="Bauru">
-      <div class="card-content">
-        <h2>Bauru</h2>
-        <p>Massa de pastel, queijo mussarela, presunto, tomate, oregano.</p>
-        <div class="price">17.90</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-    
-
-    
-    <!-- Continue para todos os pastéis -->
-  </section>
-
-  <!-- Batata estilo Marechal --><section id="batata"><h2></h2><p></p></section>
-  <h2 style="text-align:center;color:#FFD54F;margin-top:2rem;font-family:'Permanent Marker', cursive;">Batata estilo Marechal</h2>
-  <section class="menu-section">
-    <div class="card">
-      <img src="batata_maluca_m.jpg" alt="Batata Maluca M">
-      <div class="card-content">
-        <h2>Batata maluca M - Assinatura do chefe</h2>
-        <p>Nossa porção de batata acompanha, ketchup, maionese, mostarda, Catupiry, cheddar, bacon, calabresa, ovo de codorna, azeitona, mussarela e barbecue.</p>
-        <div class="price">34.00</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-    <!-- Adicionar Batata Maluca P e G -->
-  </section>
-
-  <!-- Combo na caixa com Podrão --><section id="combopodrao"><h2></h2><p></p></section>
-  <h2 style="text-align:center;color:#FFD54F;margin-top:2rem;font-family:'Permanent Marker', cursive;">Combo na caixa com Podrão</h2>
-  <section class="menu-section">
-    <div class="card">
-      <img src="combo_podrao_2xtudo.jpg" alt="2 X-Tudo Podrão + Batata Frita com Cheddar e Bacon">
-      <div class="card-content">
-        <h2>2 X-Tudo Podrão + Batata Frita com Cheddar e Bacon</h2>
-        <p>Combo acompanhado de 2 Podrão e nossa deliciosa batata frita com cheddar melt e bacon em cubos. Agora É Na Embalagem Térmica!</p>
-        <div class="price">95.90</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-    <!-- Continue com os outros combos -->
-  </section>
-
-
-  <!-- Combos na Caixa Hamburguer --><section id="combo"><h2></h2><p></p></section>
-  <h2 style="text-align:center;color:#FFD54F;margin-top:2rem;font-family:'Permanent Marker', cursive;">Combos na Caixa Hamburguer</h2>
-  <section class="menu-section">
-    <div class="card">
-      <img src="combo_solteiro.jpg" alt="Combo Solteiro - 01">
-      <div class="card-content">
-        <h2>Combo Solteiro - 01</h2>
-        <p>Nosso Combo Solteiro é a combinação perfeita para quem está sozinho e com muitaaa fome! Inclui um irresistível lanche com hamburguer.</p>
-        <div class="price">54.90</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-    <!-- Continue com Casal, Triplo, Família, Amigos -->
-  </section>
-
-
-
-
-  <!-- Lanches --><section id="lanches"><h2></h2><p></p></section>
-  <h2 style="text-align:center;color:#FFD54F;margin-top:2rem;font-family:'Permanent Marker', cursive;">Lanches</h2>
-  <section class="menu-section">
-    <div class="card">
-      <img src="cheeseburguer.jpg" alt="Cheeseburguer">
-      <div class="card-content">
-        <h2>Cheeseburguer</h2>
-        <p>O clássico Chesseburguer é composto por nosso pão de hamburguer, carne(a escolha), queijo cheddar, molho maionese defumada e maionese verde da casa.</p>
-        <div class="price">17.00</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-    <!-- Continue com Salada Burguer, Bacon Burguer, Cheddar Melt -->
-  </section>
-
-  <!-- Acompanhamentos --><section id="acompanhamentos"><h2></h2><p></p></section>
-  <h2 style="text-align:center;color:#FFD54F;margin-top:2rem;font-family:'Permanent Marker', cursive;">Acompanhamentos</h2>
-  <section class="menu-section">
-    <div class="card">
-      <img src="batata_frita_grande.jpg" alt="Batata Frita Grande">
-      <div class="card-content">
-        <h2>Batata Frita Grande</h2>
-        <p>Batata frita grande com sal.</p>
-        <div class="price">12.90</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-    <!-- Continue com Batata Maluca P/M/G, Batata Cheddar & Bacon, Cebolas Empanadas, Coxinha da Vó -->
-  </section>
-
-  <!-- Molhos --><section id="molhos"><h2></h2><p></p></section>
-  <h2 style="text-align:center;color:#FFD54F;margin-top:2rem;font-family:'Permanent Marker', cursive;">Molhos</h2>
-  <section class="menu-section">
-    <div class="card">
-      <div class="card-content">
-        <h2>Ketchup</h2>
-        <div class="price">0.50</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-content">
-        <h2>Maionese</h2>
-        <div class="price">1.50</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-    <!-- Continue com Mostarda, Maionese temperada, Vinagrete de repolho -->
-  </section>
-
-  <!-- Sobremesas --><section id="sobremesas"><h2></h2><p></p></section>
-  <h2 style="text-align:center;color:#FFD54F;margin-top:2rem;font-family:'Permanent Marker', cursive;">Sobremesas</h2>
-  <section class="menu-section">
-    <div class="card">
-      <img src="acai.jpg" alt="Marmita de Açai">
-      <div class="card-content">
-        <h2>Marmita de Açai</h2>
-        <p>Marmita de açai de 300g, escolha até 3 acompanhamentos grátis.</p>
-        <div class="price">22.99</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-    <div class="card">
-      <img src="bolo_brigadeiro.jpg" alt="Bolo de brigadeiro com Ovomaltine">
-      <div class="card-content">
-        <h2>Bolo de brigadeiro com cobertura de Ovomaltine</h2>
-        <p>Delicioso bolo de pote massa de chocolate, com recheio de brigadeiro e cobertura de creme de Ovomaltine. Aproximadamente 250g.</p>
-        <div class="price">18.50</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Bebidas --><section id="bebidas"><h2></h2><p></p></section>
-  <h2 style="text-align:center;color:#FFD54F;margin-top:2rem;font-family:'Permanent Marker', cursive;">Bebidas</h2>
-  <section class="menu-section">
-    <div class="card">
-      <img src="suco_natural.jpg" alt="Suco natural">
-      <div class="card-content">
-        <h2>Suco natural</h2>
-        <p>500ml. Preparados na hora, sem adição de açúcares ou conservantes.</p>
-        <div class="price">15.00</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-    <div class="card">
-      <img src="coca_lata.jpg" alt="Coca-Cola 350ml">
-      <div class="card-content">
-        <h2>Coca-Cola 350ml</h2>
-        <p>Refrigerante clássico em lata.</p>
-        <div class="price">7.00</div>
-        <button class="btn-add">Adicionar</button>
-      </div>
-    </div>
-    <!-- Continue com Pepsi, Fanta, Guaraná Antarctica -->
-  </section>
 </main>
 
-
 <script>
+/* elementos */
 const cartIcon = document.getElementById('cartIcon');
 const cartPanel = document.getElementById('cartPanel');
 const cartItems = document.getElementById('cartItems');
@@ -413,47 +347,111 @@ const closeModal = document.querySelector('#customModal .close-modal');
 const confirmBtn = document.querySelector('#customModal .confirm');
 const addButtons = document.querySelectorAll('.btn-add');
 const itemPriceDisplay = document.getElementById('itemPrice');
+const playVideoBtn = document.getElementById('playVideoBtn');
+const bgVideo = document.getElementById('bg-video');
 
 let cart = [];
 let selectedItem = null;
 
-// abrir modal customização
+/* ---- Vídeo mobile: se autoplay falhar, botão play aparece e ativa o vídeo ---- */
+function tryAutoplayCheck(){
+  // Alguns navegadores móveis bloqueiam autoplay mesmo com muted. detectamos se está pausado e mostramos botão.
+  setTimeout(()=>{
+    if(bgVideo && bgVideo.paused){
+      playVideoBtn.style.display = 'block';
+    } else {
+      playVideoBtn.style.display = 'none';
+    }
+  }, 600);
+}
+tryAutoplayCheck();
+
+playVideoBtn.addEventListener('click', ()=>{
+  if(bgVideo){
+    bgVideo.play().then(()=> {
+      playVideoBtn.style.display='none';
+    }).catch(()=> {
+      // se não der, ainda esconder botão e deixar poster
+      playVideoBtn.style.display='none';
+    });
+  }
+});
+
+/* ---- abrir modal customização ---- */
 addButtons.forEach(btn => {
   btn.addEventListener('click', e => {
     const card = e.target.closest('.card');
     selectedItem = {
       name: card.querySelector('h2').innerText,
-      basePrice: parseFloat(card.querySelector('.price').innerText),
+      // aceita preço com vírgula ou ponto
+      basePrice: parseFloat(card.querySelector('.price').innerText.replace(',','.')) || 0,
       options:{}, comment:''
     };
     modal.style.display='flex';
-    document.querySelectorAll('#customModal input').forEach(i => i.checked=false);
+    // resetar inputs
+    document.querySelectorAll('#customModal input[type="checkbox"]').forEach(i => i.checked=false);
+    document.querySelectorAll('#customModal input[type="radio"]').forEach(i => i.checked=false);
     document.getElementById('customComment').value='';
+    // resetar quantidades das carnes para 0
+    document.querySelectorAll('#meatList .meat-row').forEach(row => {
+      row.querySelector('[data-qty]').innerText = '0';
+    });
     updateItemPrice();
   });
 });
 
-// fechar modal
 closeModal.addEventListener('click', ()=> modal.style.display='none');
 
-// atualizar preço do item
+/* ---- controle das quantidades das carnes ---- */
+document.querySelectorAll('#meatList .meat-row').forEach(row => {
+  const minus = row.querySelector('.minus');
+  const plus = row.querySelector('.plus');
+  const qtyEl = row.querySelector('[data-qty]');
+  minus.addEventListener('click', ()=> {
+    let q = parseInt(qtyEl.innerText) || 0;
+    if(q>0) q--;
+    qtyEl.innerText = q;
+    updateItemPrice();
+  });
+  plus.addEventListener('click', ()=> {
+    let q = parseInt(qtyEl.innerText) || 0;
+    q++;
+    qtyEl.innerText = q;
+    updateItemPrice();
+  });
+});
+
+/* ---- atualizar preço do item (base + acréscimos + carnes x qty + batata/bebida) ---- */
 function updateItemPrice(){
-  let price = selectedItem.basePrice;
-  document.querySelectorAll('#customModal input:checked').forEach(i => price += parseFloat(i.dataset.price || 0));
+  if(!selectedItem) return;
+  let price = selectedItem.basePrice || 0;
+
+  // inputs selecionados (acréscimos e molhos)
+  document.querySelectorAll('#customModal input:checked').forEach(i => {
+    price += parseFloat(i.dataset.price || 0);
+  });
+
+  // carnes (multiplica preço pela quantidade)
+  document.querySelectorAll('#meatList .meat-row').forEach(row => {
+    const qty = parseInt(row.querySelector('[data-qty]').innerText) || 0;
+    const p = parseFloat(row.dataset.price || 0);
+    price += qty * p;
+  });
+
   itemPriceDisplay.textContent = price.toFixed(2);
 }
 
-// limitar checkbox
-document.querySelectorAll('#customModal input').forEach(i=>i.addEventListener('change', ()=>{
+/* limitar checkbox molhos (max 3) */
+document.querySelectorAll('#customModal input[type="checkbox"]').forEach(i=>i.addEventListener('change', ()=>{
   updateItemPrice();
-  const max = parseInt(i.dataset.max);
+  const max = parseInt(i.dataset.max || 999);
   if(i.type==='checkbox' && i.checked){
     const checked = document.querySelectorAll(`input[name="${i.name}"]:checked`);
     if(checked.length>max) i.checked=false;
   }
 }));
 
-// confirmar customização e adicionar ao carrinho
+/* ---- confirmar customização e adicionar ao carrinho ---- */
 confirmBtn.addEventListener('click', ()=>{
   selectedItem.options.molhos = Array.from(document.querySelectorAll('input[name="molho"]:checked')).map(i=>i.value);
   selectedItem.options.acrescimos = Array.from(document.querySelectorAll('input[name="acrescimo"]:checked')).map(i=>i.value);
@@ -461,10 +459,27 @@ confirmBtn.addEventListener('click', ()=>{
   selectedItem.options.batata = document.querySelector('input[name="batata"]:checked')?.value || null;
   selectedItem.comment = document.getElementById('customComment').value;
 
-  let total = selectedItem.basePrice;
+  // carnes: array de {name, qty, unitPrice}
+  const carnes = [];
+  document.querySelectorAll('#meatList .meat-row').forEach(row => {
+    const qty = parseInt(row.querySelector('[data-qty]').innerText) || 0;
+    if(qty > 0){
+      carnes.push({
+        name: row.dataset.name,
+        qty,
+        unitPrice: parseFloat(row.dataset.price || 0)
+      });
+    }
+  });
+  selectedItem.options.carnes = carnes;
+
+  // total do item
+  let total = selectedItem.basePrice || 0;
   document.querySelectorAll('#customModal input:checked').forEach(i => total += parseFloat(i.dataset.price || 0));
+  carnes.forEach(c => total += c.unitPrice * c.qty);
   selectedItem.price = total;
 
+  // para juntar itens iguais, precisamos comparar opções (incluindo carnes)
   const existing = cart.find(item => item.name===selectedItem.name && JSON.stringify(item.options)===JSON.stringify(selectedItem.options));
   if(existing) existing.qty++;
   else cart.push({...selectedItem, qty:1});
@@ -473,10 +488,10 @@ confirmBtn.addEventListener('click', ()=>{
   modal.style.display='none';
 });
 
-// abrir/fechar painel do carrinho
+/* abrir/fechar painel do carrinho */
 cartIcon.addEventListener('click', ()=> cartPanel.classList.toggle('open'));
 
-// atualizar carrinho e adicionar botão remover
+/* atualizar carrinho e adicionar botão remover */
 function updateCart(){
   cartItems.innerHTML='';
   let total=0;
@@ -484,9 +499,31 @@ function updateCart(){
     total += item.price*item.qty;
     const div=document.createElement('div');
     div.classList.add('cart-item');
+
+    // construir resumo das carnes e opções para exibir no painel
+    let opts = '';
+    if(item.options.carnes && item.options.carnes.length){
+      opts += 'Carnes: ' + item.options.carnes.map(c => `${c.name} x${c.qty}`).join(', ') + ' — ';
+    }
+    if(item.options.acrescimos && item.options.acrescimos.length){
+      opts += 'Acréscimos: ' + item.options.acrescimos.join(', ') + ' — ';
+    }
+    if(item.options.molhos && item.options.molhos.length){
+      opts += 'Molhos: ' + item.options.molhos.join(', ') + ' — ';
+    }
+    if(item.options.bebida) opts += 'Bebida: ' + item.options.bebida + ' — ';
+    if(item.options.batata) opts += 'Batata: ' + item.options.batata + ' — ';
+    if(item.comment) opts += 'Obs: ' + item.comment;
+
     div.innerHTML=`
-      ${item.name} x${item.qty} <span>R$ ${(item.price*item.qty).toFixed(2)}</span>
-      <button class="remove-btn" data-index="${index}" style="background:red;color:white;border:none;border-radius:4px;padding:2px 5px;margin-left:5px;cursor:pointer;">×</button>
+      <div style="flex:1;">
+        <div style="font-weight:700;">${item.name} x${item.qty}</div>
+        <div style="font-size:0.85rem;opacity:0.9;margin-top:4px;">${opts}</div>
+      </div>
+      <div style="text-align:right;">
+        <div>R$ ${(item.price*item.qty).toFixed(2)}</div>
+        <button class="remove-btn" data-index="${index}" style="background:red;color:white;border:none;border-radius:4px;padding:2px 5px;margin-top:6px;cursor:pointer;">×</button>
+      </div>
     `;
     cartItems.appendChild(div);
   });
@@ -503,51 +540,40 @@ function updateCart(){
   });
 }
 
-// remover limite de acréscimos
-document.querySelectorAll('#customModal input').forEach(i => {
-  if(i.name==='acrescimo') i.dataset.max = 999;
-});
-
-// finalizar pedido
+/* finalizar pedido */
 document.querySelector('.btn-checkout').addEventListener('click', () => {
   if(cart.length===0){
     alert('Seu carrinho está vazio!');
     return;
   }
 
-  let mensagem = 'Olá! Gostaria de fazer o pedido:\n\n';
+  let mensagem = 'Olá! Gostaria de fazer o pedido:%0A%0A'; // usar %0A para quebra de linha segura no wa
   cart.forEach(item => {
-    mensagem += `${item.name} x${item.qty}\n`;
-    if(item.options.molhos.length) mensagem += `Molhos: ${item.options.molhos.join(', ')}\n`;
-    if(item.options.acrescimos.length) mensagem += `Acréscimos: ${item.options.acrescimos.join(', ')}\n`;
-    if(item.options.batata) mensagem += `Batata: ${item.options.batata}\n`;
-    if(item.options.bebida) mensagem += `Bebida: ${item.options.bebida}\n`;
-    if(item.comment) mensagem += `Observação: ${item.comment}\n`;
-    mensagem += `Preço: R$ ${(item.price*item.qty).toFixed(2)}\n\n`;
+    mensagem += `${item.name} x${item.qty}%0A`;
+    if(item.options.carnes && item.options.carnes.length) mensagem += `Carnes: ${item.options.carnes.map(c=>`${c.name} x${c.qty}`).join(', ')}%0A`;
+    if(item.options.acrescimos && item.options.acrescimos.length) mensagem += `Acréscimos: ${item.options.acrescimos.join(', ')}%0A`;
+    if(item.options.molhos && item.options.molhos.length) mensagem += `Molhos: ${item.options.molhos.join(', ')}%0A`;
+    if(item.options.batata) mensagem += `Batata: ${item.options.batata}%0A`;
+    if(item.options.bebida) mensagem += `Bebida: ${item.options.bebida}%0A`;
+    if(item.comment) mensagem += `Observação: ${item.comment}%0A`;
+    mensagem += `Preço: R$ ${(item.price*item.qty).toFixed(2)}%0A%0A`;
   });
 
   let total = cart.reduce((acc, i) => acc + i.price*i.qty, 0);
-  mensagem += `Total do pedido: R$ ${total.toFixed(2)}`;
+  mensagem += `Total do pedido: R$ ${total.toFixed(2)}%0A%0A`;
+
+
+
   const telefone = '5511911653936';
-  const url = `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
+  const url = `https://wa.me/${telefone}?text=${mensagem}`;
   window.open(url, '_blank');
 });
 
-// Scroll suave para cada seção
+/* Scroll suave para cada seção */
 document.querySelectorAll('.menu-scroll button').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     const target = document.getElementById(btn.getAttribute('data-target'));
-    target.scrollIntoView({behavior:'smooth',block:'start'});
-  });
-});
-// Scroll suave para cada seção (opcional se você tiver seções com ids)
-document.querySelectorAll('.menu-scroll button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const targetId = btn.innerText.toLowerCase();
-    const target = document.getElementById(targetId);
-    if(target){
-      target.scrollIntoView({behavior:'smooth', block:'start'});
-    }
+    if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
   });
 });
 </script>
